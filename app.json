@@ -1,19 +1,24 @@
 {
   "expo": {
-    "name": "image-style-converter",
+    "name": "스마트 이미지 메이커",
     "slug": "image-style-converter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "image-style-converter",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "이미지 변환을 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "이미지를 선택하고 저장하기 위해 사진 라이브러리 접근이 필요합니다."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +26,31 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "이미지 변환을 위해 카메라 접근이 필요합니다.",
+          "photosPermission": "이미지를 선택하기 위해 사진 라이브러리 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "변환된 이미지를 저장하기 위해 사진 라이브러리 접근이 필요합니다.",
+          "savePhotosPermission": "변환된 이미지를 저장하기 위해 사진 라이브러리 접근이 필요합니다."
+        }
+      ]
+    ]
   }
 }
