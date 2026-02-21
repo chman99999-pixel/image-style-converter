@@ -53,7 +53,6 @@ export function AdminPasscode({ onVerify, onSuccess }: AdminPasscodeProps) {
         <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isVerifying}>
           <Text style={styles.buttonText}>{isVerifying ? '확인 중...' : '확인'}</Text>
         </TouchableOpacity>
-        <Text style={styles.hint}>기본 비밀번호: 1234</Text>
       </View>
     </View>
   );
@@ -119,10 +118,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-  },
-  hint: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#9E9E9E',
   },
 });
