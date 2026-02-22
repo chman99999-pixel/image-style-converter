@@ -28,14 +28,12 @@ export default function RootLayout() {
       return;
     }
 
-    // 1. URL ?ac= 파라미터 확인 (허브에서 넘어온 경우)
-    const params = new URLSearchParams(window.location.search);
-    const acParam = params.get('ac');
+    // 1. sessionStorage ac_pending 확인 (허브에서 넘어온 경우)
+    // public/index.html 인라인 스크립트가 ?ac= 파라미터를 URL에서 제거하고
+    // sessionStorage에 저장해 둠 — Expo Router 초기화 전에 실행되므로 URL이 깨끗함
+    const acParam = sessionStorage.getItem('ac_pending');
     if (acParam) {
-      // 검증 전에 즉시 URL에서 파라미터 제거 (노출 방지)
-      const url = new URL(window.location.href);
-      url.searchParams.delete('ac');
-      window.history.replaceState({}, '', url.toString());
+      sessionStorage.removeItem('ac_pending'); // 즉시 삭제 (1회성)
 
       verifyAccessCode(acParam).then((valid) => {
         if (valid) {
