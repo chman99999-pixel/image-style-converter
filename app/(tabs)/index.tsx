@@ -47,14 +47,14 @@ export default function HomeScreen() {
       >
         {/* Hero 헤더 */}
         <View style={styles.hero}>
-          <Text style={styles.appName}>나만의 그림공작소</Text>
+          <Text style={styles.appName}>그림공작소</Text>
           <Text style={styles.heroTitle}>
             상상하는 대로{' '}
             <Text style={styles.highlight}>뚝딱!</Text>
             {'\n'}우리 반 그림 제작소
           </Text>
           <Text style={styles.heroDesc}>
-            원하는 대로 그려지는 나만의 그림공작소로{'\n'}
+            원하는 대로 그려지는 그림공작소로{'\n'}
             나만의 미술 활동지를 만들어보세요.
           </Text>
         </View>
