@@ -16,6 +16,7 @@ import { StyleCard } from '../../src/components/StyleCard';
 import { AdminPasscode } from '../../src/components/AdminPasscode';
 import { PresetEditor } from '../../src/components/PresetEditor';
 import { StylePreset } from '../../src/types';
+import { presetApi } from '../../src/services/api';
 
 export default function AdminScreen() {
   const {
@@ -42,6 +43,10 @@ export default function AdminScreen() {
   const [editingPreset, setEditingPreset] = useState<StylePreset | null>(null);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [tempApiKey, setTempApiKey] = useState(apiKey);
+  const [showAccessCodeInput, setShowAccessCodeInput] = useState(false);
+  const [currentAccessCode, setCurrentAccessCode] = useState('');
+  const [tempAccessCode, setTempAccessCode] = useState('');
+  const [loadingAccessCode, setLoadingAccessCode] = useState(false);
   const { width } = useWindowDimensions();
 
   if (!isAdminAuthenticated) {
@@ -116,6 +121,33 @@ export default function AdminScreen() {
     Alert.alert('저장 완료', 'API 키가 저장되었습니다.');
   };
 
+  const handleOpenAccessCode = async () => {
+    setLoadingAccessCode(true);
+    try {
+      const { adminPassword: pw } = usePresetStore.getState();
+      const code = await presetApi.getAccessCode(pw);
+      setCurrentAccessCode(code);
+      setTempAccessCode(code);
+      setShowAccessCodeInput(true);
+    } catch (e) {
+      Alert.alert('오류', '접근 코드를 불러오지 못했습니다.');
+    } finally {
+      setLoadingAccessCode(false);
+    }
+  };
+
+  const handleSaveAccessCode = async () => {
+    try {
+      const { adminPassword: pw } = usePresetStore.getState();
+      await presetApi.saveAccessCode(tempAccessCode, pw);
+      setCurrentAccessCode(tempAccessCode);
+      setShowAccessCodeInput(false);
+      Alert.alert('저장 완료', '접근 코드가 변경되었습니다.');
+    } catch (e) {
+      Alert.alert('오류', '접근 코드 저장에 실패했습니다.');
+    }
+  };
+
   const handleMoveUp = (preset: StylePreset) => {
     const idx = sortedPresets.findIndex((p) => p.id === preset.id);
     if (idx <= 0) return;
@@ -149,6 +181,19 @@ export default function AdminScreen() {
         </View>
         <Text style={styles.apiStatus}>
           {apiKey ? `설정됨 (${apiKey.slice(0, 8)}...)` : '미설정 - API 키를 입력해주세요'}
+        </Text>
+      </View>
+
+      {/* Access Code Section */}
+      <View style={styles.apiSection}>
+        <View style={styles.apiRow}>
+          <Text style={styles.apiLabel}>접근 코드</Text>
+          <TouchableOpacity onPress={handleOpenAccessCode} disabled={loadingAccessCode}>
+            <Text style={styles.apiAction}>{loadingAccessCode ? '로딩...' : '변경'}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.apiStatus}>
+          {currentAccessCode ? `현재: ${currentAccessCode}` : '허브 → 앱 접근 제어용 코드'}
         </Text>
       </View>
 
@@ -254,6 +299,41 @@ export default function AdminScreen() {
               <TouchableOpacity
                 style={styles.modalSaveBtn}
                 onPress={handleSaveApiKey}
+              >
+                <Text style={styles.modalSaveText}>저장</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Access Code Input Modal */}
+      <Modal visible={showAccessCodeInput} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>접근 코드 변경</Text>
+            <Text style={styles.modalDesc}>
+              허브에서 앱으로 접속할 때 사용하는 코드입니다.{'\n'}
+              변경 시 허브 환경변수와 기록지해방 Secrets도 함께 업데이트해주세요.
+            </Text>
+            <TextInput
+              style={styles.apiInput}
+              value={tempAccessCode}
+              onChangeText={setTempAccessCode}
+              placeholder="새 접근 코드"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setShowAccessCodeInput(false)}
+              >
+                <Text style={styles.modalCancelText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalSaveBtn}
+                onPress={handleSaveAccessCode}
               >
                 <Text style={styles.modalSaveText}>저장</Text>
               </TouchableOpacity>

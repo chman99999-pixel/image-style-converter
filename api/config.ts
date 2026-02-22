@@ -9,6 +9,7 @@ const redis = new Redis({
 const API_KEY_KEY = 'api_key';
 const ADMIN_PASS_KEY = 'admin_password';
 const MODEL_NAME_KEY = 'model_name';
+const ACCESS_CODE_KEY = 'access_code';
 const DEFAULT_ADMIN_PASS = '1234';
 const DEFAULT_MODEL = 'gemini-2.5-flash-image';
 
@@ -41,6 +42,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ modelName });
       }
 
+      if (action === 'verify_access') {
+        const accessCode = req.query.code as string;
+        const storedCode = (await redis.get<string>(ACCESS_CODE_KEY)) ?? (process.env.DEFAULT_ACCESS_CODE ?? '2026');
+        return res.status(200).json({ valid: accessCode === storedCode });
+      }
+
+      if (action === 'get_access_code') {
+        // 관리자 인증 필요
+        const storedPass = (await redis.get<string>(ADMIN_PASS_KEY)) ?? DEFAULT_ADMIN_PASS;
+        if (password !== storedPass) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const storedCode = (await redis.get<string>(ACCESS_CODE_KEY)) ?? (process.env.DEFAULT_ACCESS_CODE ?? '2026');
+        return res.status(200).json({ accessCode: storedCode });
+      }
+
       // Full config requires admin auth
       const storedPass = (await redis.get<string>(ADMIN_PASS_KEY)) ?? DEFAULT_ADMIN_PASS;
       if (password !== storedPass) {
@@ -57,10 +74,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const { apiKey, adminPassword, modelName } = req.body;
+      const { apiKey, adminPassword, modelName, accessCode } = req.body;
       if (apiKey !== undefined) await redis.set(API_KEY_KEY, apiKey);
       if (adminPassword !== undefined) await redis.set(ADMIN_PASS_KEY, adminPassword);
       if (modelName !== undefined) await redis.set(MODEL_NAME_KEY, modelName);
+      if (accessCode !== undefined) await redis.set(ACCESS_CODE_KEY, accessCode);
       return res.status(200).json({ success: true });
     }
 

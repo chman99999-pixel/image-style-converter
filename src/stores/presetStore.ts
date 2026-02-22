@@ -9,7 +9,11 @@ interface PresetStore {
   modelName: string;
   adminPassword: string; // 메모리에 보관 (인증 후 세션 유지용)
   isAdminAuthenticated: boolean;
+  isAccessGranted: boolean;
   isLoading: boolean;
+
+  verifyAccessCode: (code: string) => Promise<boolean>;
+  setAccessGranted: (value: boolean) => void;
 
   loadPresets: () => Promise<void>;
   addPreset: (preset: Omit<StylePreset, 'id' | 'order' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -33,7 +37,25 @@ export const usePresetStore = create<PresetStore>((set, get) => ({
   modelName: 'gemini-2.5-flash-image',
   adminPassword: '',
   isAdminAuthenticated: false,
+  isAccessGranted: false,
   isLoading: false,
+
+  verifyAccessCode: async (code) => {
+    try {
+      const valid = await presetApi.verifyAccessCode(code);
+      if (valid) {
+        set({ isAccessGranted: true });
+      }
+      return valid;
+    } catch (e) {
+      console.error('Failed to verify access code:', e);
+      return false;
+    }
+  },
+
+  setAccessGranted: (value) => {
+    set({ isAccessGranted: value });
+  },
 
   loadPresets: async () => {
     set({ isLoading: true });

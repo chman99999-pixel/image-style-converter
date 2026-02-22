@@ -33,6 +33,37 @@ export const presetApi = {
     return data.valid;
   },
 
+  async verifyAccessCode(code: string): Promise<boolean> {
+    const res = await fetch(`${API_BASE}/config?action=verify_access&code=${encodeURIComponent(code)}`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.valid;
+  },
+
+  async getAccessCode(adminPassword: string): Promise<string> {
+    const res = await fetch(`${API_BASE}/config?action=get_access_code`, {
+      headers: { 'X-Admin-Password': adminPassword },
+    });
+    if (!res.ok) return '';
+    const data = await res.json();
+    return data.accessCode || '';
+  },
+
+  async saveAccessCode(accessCode: string, adminPassword: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/config`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': adminPassword,
+      },
+      body: JSON.stringify({ accessCode }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || '접근 코드 저장 실패');
+    }
+  },
+
   async getApiKey(): Promise<string> {
     const res = await fetch(`${API_BASE}/config?action=apikey`);
     if (!res.ok) return '';
