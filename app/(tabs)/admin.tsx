@@ -37,6 +37,7 @@ export default function AdminScreen() {
   const AVAILABLE_MODELS = [
     { id: 'gemini-2.5-flash-image', label: 'Gemini 2.5 Flash Image', tag: '' },
     { id: 'gemini-3-pro-image-preview', label: 'Gemini 3 Pro Image', tag: '(Preview)' },
+    { id: 'gemini-3.1-flash-image-preview', label: 'Nano Banana 2', tag: '(Preview)' },
   ];
 
   const [showEditor, setShowEditor] = useState(false);
