@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { StylePreset } from '../types';
-import { imageToBase64 } from '../utils/imageUtils';
+import { imageToBase64, resizeImage } from '../utils/imageUtils';
 
 interface PresetEditorProps {
   preset?: StylePreset | null;
@@ -52,15 +52,16 @@ export function PresetEditor({ preset, onSave, onCancel }: PresetEditorProps) {
 
     if (!result.canceled && result.assets[0]) {
       const uri = result.assets[0].uri;
-      if (Platform.OS === 'web') {
-        // 웹: blob: URL은 새로고침 시 사라지므로 base64 data URL로 변환
-        try {
-          const base64 = await imageToBase64(uri);
-          setSampleImageUri(`data:image/jpeg;base64,${base64}`);
-        } catch {
-          setSampleImageUri(uri);
+      try {
+        // 썸네일용이므로 300px로 리사이즈 후 base64 변환 (Redis 용량 절약)
+        const resized = await resizeImage(uri, 300);
+        if (Platform.OS === 'web') {
+          // resizeImage가 이미 data URL을 반환 (웹)
+          setSampleImageUri(resized);
+        } else {
+          setSampleImageUri(resized);
         }
-      } else {
+      } catch {
         setSampleImageUri(uri);
       }
     }
